@@ -8,12 +8,21 @@
 import os, json
 
 import FreeCAD as App
+import infoPartCmd
+
+
+# Autofilling info ref
+partInfo =[     'LabelDoc',                 \
+                'LabelPart',                \
+                'PadLength',                \
+                'ShapeLength' ]
+
+infoToolTip = {'LabelDoc':'Return the Label of Document','LabelPart':'Return the Label of Part','PadLength':'Return the Length of Pad','ShapeLength':'Return the Length of Shape'}
 
 # protection against update of user configuration
-
 ### to have the dir of external configuration file
-ConfUserDir = os.path.join(App.getUserAppDataDir(),'Asm4_UserConf')
-ConfUserFilename = "infoConfUser.json"
+ConfUserDir = os.path.join(App.getUserAppDataDir(),'Templates')
+ConfUserFilename = "Asm4_infoPartConf.json"
 ConfUserFilejson = os.path.join(ConfUserDir, ConfUserFilename)
 
 
@@ -24,9 +33,12 @@ try :
 ### else make the default external configuration file
 except :
     partInfoDef = dict()
-    for prop in InfoKeys.partInfo:
+    for prop in partInfo:
         partInfoDef.setdefault(prop,{'userData':prop + 'User','active':True})
-    os.mkdir(ConfUserDir)
+    try:
+        os.mkdir(ConfUserDir)
+    except:
+        pass
     file = open(ConfUserFilejson, 'x')
     json.dump(partInfoDef,file)
     file.close()
@@ -37,19 +49,6 @@ file = open(ConfUserFilejson, 'r')
 infoKeysUser = json.load(file).copy()
 file.close()
 '''
-
-
-import infoPartCmd
-
-# Autofilling info ref
-
-partInfo =[     'LabelDoc',                 \
-                'LabelPart',                \
-                'PadLength',                \
-                'ShapeLength' ]
-
-infoToolTip = {'LabelDoc':'Return the Label of Document','LabelPart':'Return the Label of Part','PadLength':'Return the Length of Pad','ShapeLength':'Return the Length of Shape'}
-
 def infoDefault(self):
     ### auto filling module
     ### load infoKeysUser    

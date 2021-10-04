@@ -8,8 +8,7 @@
 
 
 
-import os
-import json
+import os, json
 
 from PySide import QtGui, QtCore
 import FreeCADGui as Gui
@@ -22,8 +21,8 @@ import InfoKeys
 # protection against update of user configuration
 
 ### to have the dir of external configuration file
-ConfUserDir = os.path.join(App.getUserAppDataDir(),'Asm4_UserConf')
-ConfUserFilename = "infoConfUser.json"
+ConfUserDir = os.path.join(App.getUserAppDataDir(),'Templates')
+ConfUserFilename = "Asm4_infoPartConf.json"
 ConfUserFilejson = os.path.join(ConfUserDir, ConfUserFilename)
 
 
