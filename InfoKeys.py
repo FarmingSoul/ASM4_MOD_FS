@@ -5,8 +5,7 @@
 #
 # libraries for FreeCAD's Assembly 4 workbench
 
-import os
-import json
+import os, json
 
 import FreeCAD as App
 
@@ -32,10 +31,12 @@ except :
     json.dump(partInfoDef,file)
     file.close()
     
+'''
 ### now user configuration is :
 file = open(ConfUserFilejson, 'r')
 infoKeysUser = json.load(file).copy()
 file.close()
+'''
 
 
 import infoPartCmd
@@ -44,13 +45,17 @@ import infoPartCmd
 
 partInfo =[     'LabelDoc',                 \
                 'LabelPart',                \
-                'PadLength']
+                'PadLength',                \
+                'ShapeLength' ]
 
-infoToolTip = {'LabelDoc':'Return the Label of Document','LabelPart':'Return the Label of Part','PadLength':'Return the Length of Pad'}
+infoToolTip = {'LabelDoc':'Return the Label of Document','LabelPart':'Return the Label of Part','PadLength':'Return the Length of Pad','ShapeLength':'Return the Length of Shape'}
 
 def infoDefault(self):
     ### auto filling module
-    
+    ### load infoKeysUser    
+    file = open(ConfUserFilejson, 'r')
+    self.infoKeysUser = json.load(file).copy()
+    file.close()
     ### part variable creation
     try :
         self.TypeId
@@ -80,6 +85,7 @@ def infoDefault(self):
     LabelDoc(self,PART,DOC)
     LabelPart(self,PART)
     PadLength(self,PART,PAD)
+    ShapeLength(self,PART,SKETCH)
     
 """
 how make a new autoinfofield :
@@ -88,13 +94,13 @@ ref newautoinfofield name in partInfo[]
 
 make a description in infoToolTip = {}
 
-put newautoinfofield name in infoDefault() at the end
+put newautoinfofield name in infoDefault() at the end with the right arg (PAD,SKETCH...)
 
 write new def like that :
 
-def newautoinfofieldname(self,PART,PAD):
+def newautoinfofieldname(self,PART(option : DOC , BODY , PAD , SKETCH):
 ###you can use DOC - PART - BODY - PAD - SKETCH
-    auto_info_field = infoKeysUser.get('newautoinfofieldname').get('userData')
+    auto_info_field = self.infoKeysUser.get('newautoinfofieldname').get('userData')
     auto_info_fill = newautoinfofield information
     try:
         ### if the command comes from makeBom write autoinfo directly on Part
@@ -113,9 +119,28 @@ def newautoinfofieldname(self,PART,PAD):
 
 """
 
+def ShapeLength(self,PART,SKETCH):
+###you can use DOC - PART - BODY - PAD - SKETCH
+    auto_info_field = self.infoKeysUser.get('ShapeLength').get('userData')
+    auto_info_fill = SKETCH.Shape.Length
+    try:
+        ### if the command comes from makeBom write autoinfo directly on Part
+        self.TypeId
+        setattr(PART,auto_info_field,str(auto_info_fill))
+    except AttributeError:
+        ### if the command comes from infoPartUI write autoinfo on autofilling field on UI
+        try :
+        ### if field is actived
+            for i in range(len(self.infoTable)):
+                if self.infoTable[i][0]== auto_info_field :
+                    self.infos[i].setText(str(auto_info_fill))
+        except AttributeError:
+        ### if field is not actived
+            pass
+
 def PadLength(self,PART,PAD):
 ###you can use DOC - PART - BODY - PAD - SKETCH
-    auto_info_field = infoKeysUser.get('PadLength').get('userData')
+    auto_info_field = self.infoKeysUser.get('PadLength').get('userData')
     auto_info_fill = PAD.Length
     try:
         ### if the command comes from makeBom write autoinfo directly on Part
@@ -135,7 +160,7 @@ def PadLength(self,PART,PAD):
 
         
 def LabelDoc(self,PART,DOC):
-    docLabel = infoKeysUser.get('LabelDoc').get('userData')
+    docLabel = self.infoKeysUser.get('LabelDoc').get('userData')
     try:
         ### if the command comes from makeBom write autoinfo directly on Part
         self.TypeId
@@ -152,7 +177,7 @@ def LabelDoc(self,PART,DOC):
             pass
         
 def LabelPart(self,PART):
-    partLabel = infoKeysUser.get('LabelPart').get('userData')
+    partLabel = self.infoKeysUser.get('LabelPart').get('userData')
     try:
         ### if the command comes from makeBom write autoinfo directly on Part
         self.TypeId
