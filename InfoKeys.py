@@ -5,33 +5,47 @@
 #
 # libraries for FreeCAD's Assembly 4 workbench
 
-import os, shutil
-import Asm4_libs as Asm4
+import os
+import json
 
-# protection against update of userconf
+import FreeCAD as App
+
+# protection against update of user configuration
 
 ### to have the dir of external configuration file
-wbPath = Asm4.wbPath
-ConfUserFile       = os.path.join( wbPath, 'infoConfUser.py' )
-ConfUserFileInit   = os.path.join( wbPath, 'infoConfUserInit.py' )
+ConfUserDir = os.path.join(App.getUserAppDataDir(),'Asm4_UserConf')
+ConfUserFilename = "infoConfUser.json"
+ConfUserFilejson = os.path.join(ConfUserDir, ConfUserFilename)
+
+
 ### try to open existing external configuration file of user
 try :
-    fichier = open(ConfUserFile, 'r')
-    fichier.close()
-    fichier.close()
+    file = open(ConfUserFilejson, 'r')
+    file.close()
 ### else make the default external configuration file
 except :
-    shutil.copyfile( ConfUserFileInit , ConfUserFile )
+    partInfoDef = dict()
+    for prop in InfoKeys.partInfo:
+        partInfoDef.setdefault(prop,{'userData':prop + 'User','active':True})
+    os.mkdir(ConfUserDir)
+    file = open(ConfUserFilejson, 'x')
+    json.dump(partInfoDef,file)
+    file.close()
     
-import infoConfUser
+### now user configuration is :
+file = open(ConfUserFilejson, 'r')
+infoKeysUser = json.load(file).copy()
+file.close()
+
 
 import infoPartCmd
 
 # Autofilling info ref
 
 partInfo =[     'LabelDoc',                 \
-                'LabelPart' ,               \
-                'newUpdateofAsm4' ]
+                'LabelPart'  ]
+
+infoToolTip = {'LabelDoc':'Return the Label of Document','LabelPart':'Return the Label of Part'}
 
 def infoDefault(self):
     ### auto filling module
@@ -70,7 +84,9 @@ how make a new autoinfofield :
 
 ref newautoinfofield name in partInfo[]
 
-ref newautoinfofield name in infoDefault() at the end
+make a description in infoToolTip = {}
+
+put newautoinfofield name in infoDefault() at the end
 
 write new def like that :
 
@@ -96,7 +112,7 @@ def newautoinfofield(self,PART (opt : DOC , BODY , PAD , SKETCH):
 """
         
 def LabelDoc(self,PART,DOC):
-    docLabel = infoConfUser.partInfo.get('LabelDoc').get('userData')
+    docLabel = infoKeysUser.get('LabelDoc').get('userData')
     try:
         ### if the command comes from makeBom write autoinfo directly on Part
         self.TypeId
@@ -113,7 +129,7 @@ def LabelDoc(self,PART,DOC):
             pass
         
 def LabelPart(self,PART):
-    partLabel = infoConfUser.partInfo.get('LabelPart').get('userData')
+    partLabel = infoKeysUser.get('LabelPart').get('userData')
     try:
         ### if the command comes from makeBom write autoinfo directly on Part
         self.TypeId
