@@ -43,9 +43,10 @@ import infoPartCmd
 # Autofilling info ref
 
 partInfo =[     'LabelDoc',                 \
-                'LabelPart'  ]
+                'LabelPart',                \
+                'PadLength']
 
-infoToolTip = {'LabelDoc':'Return the Label of Document','LabelPart':'Return the Label of Part'}
+infoToolTip = {'LabelDoc':'Return the Label of Document','LabelPart':'Return the Label of Part','PadLength':'Return the Length of Pad'}
 
 def infoDefault(self):
     ### auto filling module
@@ -78,6 +79,7 @@ def infoDefault(self):
     ### start all autoinfofield
     LabelDoc(self,PART,DOC)
     LabelPart(self,PART)
+    PadLength(self,PART,PAD)
     
 """
 how make a new autoinfofield :
@@ -90,26 +92,47 @@ put newautoinfofield name in infoDefault() at the end
 
 write new def like that :
 
-def newautoinfofield(self,PART (opt : DOC , BODY , PAD , SKETCH):
+def newautoinfofieldname(self,PART,PAD):
 ###you can use DOC - PART - BODY - PAD - SKETCH
-    auto_info = string you want to write in field
+    auto_info_field = infoKeysUser.get('newautoinfofieldname').get('userData')
+    auto_info_fill = newautoinfofield information
     try:
         ### if the command comes from makeBom write autoinfo directly on Part
         self.TypeId
-        auto_info = string 
-        setattr(PART,'newautoinfofield name',auto_info)
+        setattr(PART,auto_info_field,str(auto_info_fill))
     except AttributeError:
         ### if the command comes from infoPartUI write autoinfo on autofilling field on UI
         try :
         ### if field is actived
             for i in range(len(self.infoTable)):
-                if self.infoTable[i][0]=='newautoinfofield name':
-                    self.infos[i].setText(auto_info)
+                if self.infoTable[i][0]== auto_info_field :
+                    self.infos[i].setText(str(auto_info_fill))
         except AttributeError:
         ### if field is not actived
             pass
 
 """
+
+def PadLength(self,PART,PAD):
+###you can use DOC - PART - BODY - PAD - SKETCH
+    auto_info_field = infoKeysUser.get('PadLength').get('userData')
+    auto_info_fill = PAD.Length
+    try:
+        ### if the command comes from makeBom write autoinfo directly on Part
+        self.TypeId
+        setattr(PART,auto_info_field,str(auto_info_fill))
+    except AttributeError:
+        ### if the command comes from infoPartUI write autoinfo on autofilling field on UI
+        try :
+        ### if field is actived
+            for i in range(len(self.infoTable)):
+                if self.infoTable[i][0]== auto_info_field :
+                    self.infos[i].setText(str(auto_info_fill))
+        except AttributeError:
+        ### if field is not actived
+            pass
+
+
         
 def LabelDoc(self,PART,DOC):
     docLabel = infoKeysUser.get('LabelDoc').get('userData')
